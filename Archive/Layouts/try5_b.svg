@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1280" height="800" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#0f1113"/>
+
+  <!-- Background app UI (dimmed) -->
+  <g opacity="0.35">
+    <rect x="40" y="40" width="1200" height="720" rx="12" fill="#0b0c0d" stroke="#1f2224"/>
+    <text x="80" y="84" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto" font-size="18" fill="#d7d9db">Encrypt</text>
+    <!-- simplified controls area -->
+    <rect x="80" y="120" width="380" height="520" rx="10" fill="#0b0c0d" stroke="#1f2224"/>
+  </g>
+
+  <!-- Modal overlay -->
+  <rect x="140" y="120" width="1000" height="560" rx="12" fill="#0c0d0e" stroke="#2a2c2d" />
+
+  <!-- Modal header -->
+  <text x="220" y="170" font-family="-apple-system, BlinkMacSystemFont" font-size="18" fill="#e6e8ea">Generate password</text>
+  <text x="220" y="196" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#9aa0a6">Choose between a random password or a mnemonic passphrase.</text>
+
+  <!-- Explanation box -->
+  <rect x="220" y="212" width="820" height="64" rx="8" fill="#0f1113" stroke="#1f2224"/>
+  <text x="236" y="236" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#c7c9cb">Random password: characters, numbers, symbols — good for single-use secrets.</text>
+  <text x="236" y="256" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#c7c9cb">Mnemonic passphrase: a sequence of common words — easier to remember and type.</text>
+
+  <!-- Mode selection (tabs) -->
+  <g transform="translate(220,296)">
+    <!-- Random password tab -->
+    <rect x="0" y="0" width="260" height="40" rx="8" fill="#141617" stroke="#232526"/>
+    <text x="18" y="26" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#d7d9db">Random password</text>
+    <!-- Mnemonic tab (inactive) -->
+    <rect x="272" y="0" width="260" height="40" rx="8" fill="#0b0c0d" stroke="#1f2224"/>
+    <text x="290" y="26" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#9aa0a6">Mnemonic passphrase</text>
+  </g>
+
+  <!-- Random password controls -->
+  <g transform="translate(220,352)">
+    <text x="0" y="18" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#c7c9cb">Length</text>
+    <rect x="68" y="0" width="420" height="12" rx="6" fill="#151617"/>
+    <!-- slider thumb -->
+    <circle cx="68" cy="6" r="8" fill="#14aaf0"/>
+    <text x="500" y="10" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#9aa0a6">16</text>
+
+    <text x="0" y="50" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#c7c9cb">Include</text>
+    <!-- Include checkboxes -->
+    <g transform="translate(68,34)" fill="#c7c9cb" font-family="-apple-system, BlinkMacSystemFont" font-size="13">
+      <rect x="0" y="0" width="14" height="14" rx="3" fill="#0d1012" stroke="#26292b"/>
+      <text x="22" y="12">Lowercase</text>
+
+      <rect x="140" y="0" width="14" height="14" rx="3" fill="#0d1012" stroke="#26292b"/>
+      <text x="168" y="12">Uppercase</text>
+
+      <rect x="320" y="0" width="14" height="14" rx="3" fill="#0d1012" stroke="#26292b"/>
+      <text x="348" y="12">Numbers</text>
+
+      <rect x="460" y="0" width="14" height="14" rx="3" fill="#0d1012" stroke="#26292b"/>
+      <text x="488" y="12">Symbols</text>
+    </g>
+  </g>
+
+  <!-- Mnemonic controls (shown below; for simplicity rendered but inactive) -->
+  <g transform="translate(220,452)">
+    <text x="0" y="18" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#9aa0a6">Word count</text>
+    <rect x="90" y="0" width="120" height="32" rx="6" fill="#0d1012" stroke="#26292b"/>
+    <text x="150" y="22" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#c7c9cb">6</text>
+    <text x="220" y="22" font-family="-apple-system, BlinkMacSystemFont" font-size="12" fill="#6b6e71">min 6</text>
+    <text x="0" y="46" font-family="-apple-system, BlinkMacSystemFont" font-size="12" fill="#6b6e71">Use a high-quality wordlist (BIP-39 or similar) for entropy.</text>
+  </g>
+
+  <!-- Generated preview area -->
+  <rect x="220" y="520" width="820" height="64" rx="8" fill="#0b0c0d" stroke="#1f2224"/>
+  <text x="236" y="548" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#9aa0a6">Generated: ••••••••••••••••</text>
+
+  <!-- Modal action buttons -->
+  <rect x="220" y="600" width="120" height="40" rx="8" fill="#2b2f33" stroke="#2f3336"/>
+  <text x="280" y="626" font-family="-apple-system, BlinkMacSystemFont" font-size="14" fill="#d7d9db" text-anchor="middle">Cancel</text>
+
+  <rect x="360" y="600" width="156" height="40" rx="8" fill="#14aaf0"/>
+  <text x="438" y="626" font-family="-apple-system, BlinkMacSystemFont" font-size="14" fill="#fff" text-anchor="middle">Generate</text>
+
+  <rect x="540" y="600" width="160" height="40" rx="8" fill="#0f6fff"/>
+  <text x="620" y="626" font-family="-apple-system, BlinkMacSystemFont" font-size="14" fill="#fff" text-anchor="middle">Apply to fields</text>
+
+  <!-- Close icon -->
+  <rect x="1120" y="132" width="28" height="28" rx="6" fill="#151617"/>
+  <text x="1134" y="152" font-family="-apple-system, BlinkMacSystemFont" font-size="16" fill="#9aa0a6">✕</text>
+</svg>

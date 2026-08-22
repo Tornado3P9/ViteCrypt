@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1000"
+   height="1000"
+   viewBox="0 0 1000 1000"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   sodipodi:docname="qrcode_f.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="false"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showborder="false"
+     borderlayer="false"
+     shape-rendering="crispEdges"
+     inkscape:zoom="0.35355339"
+     inkscape:cx="489.31789"
+     inkscape:cy="555.78593"
+     inkscape:window-width="1920"
+     inkscape:window-height="1029"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     showguides="true" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect1"
+       style="stroke:none;stroke-width:0.948826"
+       d="M 0.64863635,0.58384125 V 266.60406 H 112.4564 V 115.52194 H 266.09764 V 0.58384125 Z m 387.76505365,0 V 115.52194 H 610.04848 V 0.58384125 Z m 342.32244,0 V 115.52194 H 882.56891 V 265.82137 H 999.32447 V 0.58384125 Z M 288.80327,290.36613 v 419.35252 h 419.4621 V 290.36613 Z m 593.76564,96.85824 V 616.88334 H 999.32447 V 387.22437 Z M 0.64863635,388.0051 V 614.73099 H 112.4564 V 388.0051 Z m 0,342.95932 V 999.3894 H 266.19942 V 885.42967 H 112.4564 V 730.96442 Z M 882.56891,733.11485 V 885.42967 H 730.83596 V 999.3894 H 999.32447 V 733.11485 Z M 388.51547,885.42967 V 999.3894 H 610.15028 V 885.42967 Z" />
+  </g>
+  <metadata
+     id="metadata1">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

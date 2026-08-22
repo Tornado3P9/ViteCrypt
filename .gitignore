@@ -1,0 +1,10 @@
+/target
+
+# Ignore all PNG and SVG files
+*.png
+*.svg
+
+# But DO NOT ignore anything inside Archive/
+!Archive/
+!Archive/**/*.png
+!Archive/**/*.svg

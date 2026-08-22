@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#0f1113"/>
+
+  <!-- Window frame -->
+  <g transform="translate(160,120)">
+    <rect width="1600" height="840" rx="14" fill="#0b0c0d" stroke="#1f2224" stroke-width="1"/>
+
+    <!-- Title bar -->
+    <rect x="0" y="0" width="1600" height="56" rx="14 14 0 0" fill="#0f1113"/>
+    <g transform="translate(16,16)">
+      <circle cx="8" cy="8" r="8" fill="#ff5f57"/>
+      <circle cx="36" cy="8" r="8" fill="#ffbd2e"/>
+      <circle cx="64" cy="8" r="8" fill="#28c840"/>
+    </g>
+    <text x="96" y="36" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto" font-size="14" fill="#d7d9db">Encrypt</text>
+
+    <!-- Main single-column layout with increased toolbar spacing -->
+    <g transform="translate(24,88)">
+      <!-- Provide extra top margin before toolbar -->
+      <!-- Small toolbar above text area (left) with increased spacing -->
+      <g transform="translate(8, -16)">
+        <rect x="0" y="0" width="420" height="40" rx="10" fill="#0b0c0d" stroke="#1f2224"/>
+        <g fill="#9aa0a6" font-family="-apple-system, BlinkMacSystemFont" font-size="14">
+          <text x="16" y="26">Paste</text>
+          <text x="96" y="26">Copy</text>
+          <text x="176" y="26">Import</text>
+          <text x="264" y="26">Export</text>
+        </g>
+      </g>
+
+      <!-- Large TextEdit (placed below toolbar with extra padding) -->
+      <rect x="0" y="40" width="1552" height="420" rx="10" fill="#0c0d0e" stroke="#232526"/>
+      <text x="28" y="76" font-family="-apple-system, BlinkMacSystemFont" font-size="16" fill="#8b8f93">Enter text to encrypt / paste ciphertext here</text>
+
+      <!-- Cursor mock -->
+      <rect x="28" y="88" width="2" height="24" fill="#9aa0a6" opacity="0.8"/>
+
+      <!-- Password row: two side-by-side fields placed with more space below text area -->
+      <g transform="translate(0,476)">
+        <rect x="0" y="0" width="744" height="48" rx="8" fill="#0d1012" stroke="#26292b"/>
+        <text x="16" y="32" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#7e8184">Password</text>
+        <rect x="760" y="0" width="744" height="48" rx="8" fill="#0d1012" stroke="#26292b"/>
+        <text x="776" y="32" font-family="-apple-system, BlinkMacSystemFont" font-size="13" fill="#7e8184">Confirm</text>
+      </g>
+
+      <!-- Action row (bottom) with spacing -->
+      <g transform="translate(0,540)">
+        <!-- Encrypt button (primary) -->
+        <rect x="0" y="0" width="516" height="56" rx="10" fill="#0f6fff"/>
+        <text x="258" y="36" font-family="-apple-system, BlinkMacSystemFont" font-size="18" fill="#fff" text-anchor="middle">Encrypt</text>
+
+        <!-- Decrypt button (secondary) -->
+        <rect x="532" y="0" width="516" height="56" rx="10" fill="#2b2f33" stroke="#2f3336"/>
+        <text x="790" y="36" font-family="-apple-system, BlinkMacSystemFont" font-size="18" fill="#d7d9db" text-anchor="middle">Decrypt</text>
+
+        <!-- Clear button (outlined, right) -->
+        <rect x="1064" y="0" width="516" height="56" rx="10" fill="transparent" stroke="#3a3d40"/>
+        <text x="1322" y="36" font-family="-apple-system, BlinkMacSystemFont" font-size="18" fill="#d7d9db" text-anchor="middle">Clear</text>
+      </g>
+
+      <!-- Inline validation below password fields -->
+      <text x="16" y="612" font-family="-apple-system, BlinkMacSystemFont" font-size="12" fill="#ff6b6b">Passwords do not match</text>
+
+      <!-- Footer shortcuts -->
+      <text x="16" y="640" font-family="-apple-system, BlinkMacSystemFont" font-size="12" fill="#6b6e71">Shortcuts: ⌘Enter encrypt • ⌥Enter decrypt • Esc clear</text>
+    </g>
+  </g>
+</svg>

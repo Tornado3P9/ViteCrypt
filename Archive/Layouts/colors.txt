@@ -1,0 +1,58 @@
+Window Background #1b1b1b
+Textfeld #262626
+input line #262626
+Button #262626
+Button text #c4c4c4
+Eye symbol #c4c4c4
+Text #c4c4c4
+Active text elements highlighted border color #63d0df
+
+
+import { Button, LineEdit, TextEdit, VerticalBox } from "std-widgets.slint";
+
+export component MainWindow inherits Window {
+    in property<string> input_text;
+    in property<string> password_text;
+    in property<string> confirm_text;
+
+    GridLayout {
+        spacing: 8px;
+        padding: 16px;
+        Text { horizontal-alignment: center; text: "Input text here:"; row: 0; col: 0; colspan: 2;}
+        TextEdit {
+            row: 1; col: 0; colspan: 2;
+            preferred-height: 280px;
+            preferred-width: 350px;
+            min-height: 280px;
+            min-width: 350px;
+            text: root.input_text;
+        }
+
+        Text { vertical-alignment: center; text: "Password:"; row: 2; col: 0;}
+        LineEdit {
+            input-type: password;
+            placeholder-text: "Enter password";
+            text: root.password_text;
+            row: 2; col: 1;
+        }
+
+        Text { vertical-alignment: center; text: "Confirm password:"; row: 3; col: 0;}
+        LineEdit {
+            input-type: password;
+            placeholder-text: "Re-enter password";
+            text: root.confirm_text;
+            row: 3; col: 1;
+        }
+
+        HorizontalLayout {
+            row: 4; col: 0; colspan: 2;
+            spacing: 6px;
+            Button { text: "Encrypt"; clicked => root.on_encrypt();}
+            Button { text: "Decrypt"; clicked => root.on_decrypt();}
+        } 
+    }
+
+    callback on_encrypt();
+    callback on_decrypt();
+}
+
