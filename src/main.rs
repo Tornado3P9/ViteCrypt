@@ -1,51 +1,32 @@
 mod clipboard;
+mod constants;
+mod errors;
 mod functions;
 
-use iced::widget::{
-    TextInput, button, column, container, row, space, text,
-    text_editor, tooltip, slider, toggler, checkbox,
-};
-use iced::{
-    Element, Font, Length, Padding, Subscription, Task, Theme,
-    exit, keyboard,
-};
+use constants::MIN_PASSWORD_LEN;
+
+use errors::Error;
+
+use std::path::PathBuf;
+use std::sync::Arc;
 
 use iced::Alignment::Center;
-
+use iced::widget::{
+    TextInput, button, checkbox, column, container, row, slider, space, text, text_editor, toggler,
+    tooltip,
+};
+use iced::{Element, Length, Padding, Subscription, Task, Theme, exit, keyboard};
 use smol_str::SmolStr;
 
-use std::io;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use std::time::Duration;
-
-// Encryption Algorithm
-use aes_gcm::{
-    Aes256Gcm, Key, Nonce,
-    aead::rand_core::RngCore,
-    aead::{Aead, KeyInit, OsRng},
+use functions::{
+    action, copy_icon, count_non_overlapping, create_alphabet, decrypt, encrypt, eye_icon,
+    find_in_editor_content, gen_random_pass, generate_passphrase, is_mnemonic_passphrase,
+    is_strong_passphrase, load_wordlist, lupe_icon, new_icon, open_icon, password_input_field,
+    paste_icon, pick_file, pick_qr_image, qrcode_open_icon, qrcode_save_icon, save_file, save_icon,
+    save_qr_image,
 };
-use argon2::Argon2;
-use zeroize::Zeroize;
-use functions::{encrypt, decrypt};
 
-// ...
-use functions::{CryptoError};
-
-// QR Code Generation
-use image::{ImageBuffer, Luma, imageops::FilterType};
-use qrcodegen::{QrCode, QrCodeEcc};
-use rqrr;
-
-// Global Constants
-const MIN_PASSWORD_LEN: usize = 8; // defining the absolute minimum
-const GOOD_PASSWORD_LEN: usize = 12; // ok password length
-const MIN_MNEMONIC_WORDS: usize = 6; // min number of words, see is_mnemonic_passphrase()
-
-const SALT_LEN: usize = 16;
-const NONCE_LEN: usize = 12;
-const KEY_LEN: usize = 32; // 256-bit key
-
+use qrcodegen::QrCodeEcc;
 
 fn main() -> iced::Result {
     iced::application(Editor::new, Editor::update, Editor::view)
@@ -102,7 +83,7 @@ struct Editor {
 }
 
 #[derive(Debug, Clone)]
-enum Message {
+pub enum Message {
     Edit(text_editor::Action),
     New,
     Open,
@@ -303,7 +284,7 @@ impl Editor {
                 self.error = None;
 
                 let text: String = self.content.text().to_string();
-                
+
                 let ok: bool = clipboard::set_clipboard_text(&text);
                 println!("Set clipboard ok? {}", ok);
 
@@ -314,7 +295,7 @@ impl Editor {
                 self.error = None;
 
                 let current_text: String = self.content.text();
-                
+
                 if let Some(t) = clipboard::get_clipboard_text() {
                     // println!("Clipboard text: {}", &t);
                     let combined: String = if current_text.is_empty() {
@@ -334,7 +315,7 @@ impl Editor {
                 } else {
                     self.find_and_replace_visibility = true;
                 }
-                
+
                 Task::none()
             }
             // Message::ToggleTheme => {
@@ -354,7 +335,7 @@ impl Editor {
                 } else {
                     Theme::Dark
                 };
-                
+
                 Task::none()
             }
             Message::Encrypt => {
@@ -363,9 +344,9 @@ impl Editor {
                 let password1: String = self.first.clone();
                 if password1.trim().is_empty() {
                     eprintln!("Error: first password is empty or only contains spaces");
-                    return Task::none()
+                    return Task::none();
                 }
-                
+
                 match encrypt(&password1, text_as_bytes) {
                     Ok(encrypted_blob) => {
                         println!("Encryption successful!");
@@ -390,7 +371,7 @@ impl Editor {
                 let password1: String = self.first.clone();
                 if password1.trim().is_empty() {
                     eprintln!("Error: first password is empty or only contains spaces");
-                    return Task::none()
+                    return Task::none();
                 }
 
                 let encrypted_base58: String = self.content.text();
@@ -398,7 +379,7 @@ impl Editor {
                     Ok(v) => v,
                     Err(e) => {
                         eprintln!("Invalid Base58. Failed to decode: {e}");
-                        return Task::none()
+                        return Task::none();
                     }
                 };
 
@@ -425,7 +406,7 @@ impl Editor {
 
                 self.first.clear();
                 self.second.clear();
-                self.content = text_editor::Content::new();  // text_editor::Content::with_text("");
+                self.content = text_editor::Content::new(); // text_editor::Content::with_text("");
                 self.is_dirty = true;
                 self.search = String::new();
                 self.replace_with = String::new();
@@ -478,7 +459,8 @@ impl Editor {
 
                 if self.a || self.b || self.c || self.d {
                     let new_alphabet: String = create_alphabet(self.a, self.b, self.c, self.d);
-                    self.temp_passphrase = gen_random_pass(self.pass_slider_value, &new_alphabet.into_bytes());
+                    self.temp_passphrase =
+                        gen_random_pass(self.pass_slider_value, &new_alphabet.into_bytes());
                 }
 
                 Task::none()
@@ -492,7 +474,8 @@ impl Editor {
                 let wordlist: Vec<&str> = load_wordlist();
                 // println!("wordlist.len() = {}", wordlist.len()); // Remove before flight!!
 
-                self.temp_passphrase = generate_passphrase(&wordlist, self.mnemonic_slider_value as usize);
+                self.temp_passphrase =
+                    generate_passphrase(&wordlist, self.mnemonic_slider_value as usize);
 
                 Task::none()
             }
@@ -555,7 +538,7 @@ impl Editor {
                 //     position: end,
                 //     selection: Some(start),
                 // });
-                
+
                 if let Some((start, end)) = find_in_editor_content(&self.content, &self.search) {
                     self.content.move_to(text_editor::Cursor {
                         position: end,
@@ -579,12 +562,13 @@ impl Editor {
                         // println!("Remove Next selected"); // Remove before flight!!
                         let full_text: String = self.content.text();
                         if self.search.is_empty() {
-                            return Task::none() // the program would crash if self.search is empty
+                            return Task::none(); // the program would crash if self.search is empty
                         }
                         self.is_dirty = true;
                         if let Some(pos) = full_text.find(&self.search) {
                             let mut replaced: String = full_text;
-                            replaced.replace_range(pos..pos + self.search.len(), &self.replace_with);
+                            replaced
+                                .replace_range(pos..pos + self.search.len(), &self.replace_with);
 
                             // Update counter number for substring occurances in text
                             self.found = self.found.saturating_sub(1); //self.found -= 1; but clamp so that not negative
@@ -803,7 +787,11 @@ impl Editor {
                 "Create/Save QR code file".to_string(),
                 Some(Message::QRCodeSave)
             ),
-            action(paste_icon(), "Paste clipboard text".to_string(), Some(Message::Paste)),
+            action(
+                paste_icon(),
+                "Paste clipboard text".to_string(),
+                Some(Message::Paste)
+            ),
             action(
                 copy_icon(),
                 "Copy to clipboard".to_string(),
@@ -815,11 +803,10 @@ impl Editor {
             //     Some(Message::ToggleRow)
             // ),
             space::horizontal(),
-            toggler(self.toggler_is_switched)
-                .on_toggle(Message::ToggleTheme) //.label("toggle theme"))
-            // button("toggle theme")
-            //     .on_press(Message::ToggleTheme)
-            //     .style(button::subtle)
+            toggler(self.toggler_is_switched).on_toggle(Message::ToggleTheme) //.label("toggle theme"))
+                                                                              // button("toggle theme")
+                                                                              //     .on_press(Message::ToggleTheme)
+                                                                              //     .style(button::subtle)
         ]
         .spacing(10)
         .width(Length::FillPortion(3))
@@ -841,23 +828,24 @@ impl Editor {
         //     ..container::Style::default()
         // });
 
-        let lupe_row = container(
-            if self.found == 0usize {
+        let lupe_row = container(if self.found == 0usize {
             row![lupe_icon()]
                 .spacing(8)
                 .align_y(iced::Alignment::Center)
-            } else {
-                row![lupe_icon(), text(format!("{}", self.found)).size(18)]
-                    .spacing(8)
-                    .align_y(iced::Alignment::Center)
-            }
-        )
+        } else {
+            row![lupe_icon(), text(format!("{}", self.found)).size(18)]
+                .spacing(8)
+                .align_y(iced::Alignment::Center)
+        })
         .padding([5, 10])
         .style(|theme: &Theme| container::Style {
-            background: Some(match theme {
-                Theme::Dark => iced::Color::from_rgb8(0x32, 0x35, 0x39),
-                _ => iced::Color::from_rgb(0.85, 0.92, 1.0),
-            }.into()),
+            background: Some(
+                match theme {
+                    Theme::Dark => iced::Color::from_rgb8(0x32, 0x35, 0x39),
+                    _ => iced::Color::from_rgb(0.85, 0.92, 1.0),
+                }
+                .into(),
+            ),
             // text_color: Some(iced::Color::from_rgb(1.0, 1.0, 1.0).into()),
             border: iced::border::rounded(16),
             ..container::Style::default()
@@ -867,16 +855,24 @@ impl Editor {
             EditorFunction::ALL,
             self.selected_function,
             Message::FunctionSelected,
-        ).placeholder("choose");
+        )
+        .placeholder("choose");
 
         let find_and_replace_row: Element<_> = if self.find_and_replace_visibility {
             row![
                 lupe_row,
                 space::horizontal().width(5),
-                TextInput::new("find...", &self.search).width(Length::Fill).on_input(Message::SearchChanged),
-                TextInput::new("replace with...", &self.replace_with).width(Length::Fill).on_input(Message::ReplaceChanged),
+                TextInput::new("find...", &self.search)
+                    .width(Length::Fill)
+                    .on_input(Message::SearchChanged),
+                TextInput::new("replace with...", &self.replace_with)
+                    .width(Length::Fill)
+                    .on_input(Message::ReplaceChanged),
                 space::horizontal().width(5),
-                button("Select").on_press(Message::FindSelect).style(button::subtle).padding([5, 10]),
+                button("Select")
+                    .on_press(Message::FindSelect)
+                    .style(button::subtle)
+                    .padding([5, 10]),
                 function_picker,
             ]
             .padding(Padding::new(0.).top(0).right(0).bottom(5).left(0))
@@ -960,7 +956,6 @@ impl Editor {
         // container(row![left, right].spacing(35)).padding(10).into() // the original final line
         let base = container(row![left, right].spacing(35)).padding(10);
 
-
         /**** Popup Overlay Menu ****/
 
         // IMPORTANT: make the base fill the screen
@@ -983,7 +978,7 @@ impl Editor {
                 })
                 .on_press(Message::MnemonicBtnPressed)
                 .padding(Padding::new(0.).top(6).right(10).bottom(7).left(10));
-            
+
             let content = row![
                 random_pass,
                 space::horizontal().width(120),
@@ -999,18 +994,30 @@ impl Editor {
             .width(350)
             .height(30);
         let pass_slider_val: i32 = self.pass_slider_value.clone();
-        let pass_slider_row = row![text("Password length:").size(14), pass_slider, text(format!("{}", pass_slider_val))]
-            .spacing(20)
-            .align_y(iced::Alignment::Center);
+        let pass_slider_row = row![
+            text("Password length:").size(14),
+            pass_slider,
+            text(format!("{}", pass_slider_val))
+        ]
+        .spacing(20)
+        .align_y(iced::Alignment::Center);
 
-        let mnemonic_slider = slider(5..=30, self.mnemonic_slider_value, Message::MnemomicSliderChanged)
-            .step(1)
-            .width(350)
-            .height(30);
+        let mnemonic_slider = slider(
+            5..=30,
+            self.mnemonic_slider_value,
+            Message::MnemomicSliderChanged,
+        )
+        .step(1)
+        .width(350)
+        .height(30);
         let mnemonic_slider_val: i32 = self.mnemonic_slider_value.clone();
-        let mnemonic_slider_row = row![text("Mnemonic length:").size(14), mnemonic_slider, text(format!("{}", mnemonic_slider_val))]
-            .spacing(20)
-            .align_y(iced::Alignment::Center);
+        let mnemonic_slider_row = row![
+            text("Mnemonic length:").size(14),
+            mnemonic_slider,
+            text(format!("{}", mnemonic_slider_val))
+        ]
+        .spacing(20)
+        .align_y(iced::Alignment::Center);
 
         let cb_a = checkbox(self.a).on_toggle(Message::A);
         let cb_a_label = text("Lowercase").size(14);
@@ -1021,9 +1028,19 @@ impl Editor {
         let cb_d = checkbox(self.d).on_toggle(Message::D);
         let cb_d_label = text("Symbols").size(14);
 
-        let pass_checks = row![text("Password include:").size(14), cb_a, cb_a_label, cb_b, cb_b_label, cb_c, cb_c_label, cb_d, cb_d_label]
-            .spacing(20)
-            .align_y(iced::Alignment::Center);
+        let pass_checks = row![
+            text("Password include:").size(14),
+            cb_a,
+            cb_a_label,
+            cb_b,
+            cb_b_label,
+            cb_c,
+            cb_c_label,
+            cb_d,
+            cb_d_label
+        ]
+        .spacing(20)
+        .align_y(iced::Alignment::Center);
 
         let content = container(column![
             text("Choose between a random password or a mnemonic passphrase.").size(14),
@@ -1082,7 +1099,6 @@ impl Editor {
     }
 }
 
-
 /*********Start Texteditor Dropdown */
 use iced::widget::pick_list;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1115,7 +1131,6 @@ impl std::fmt::Display for EditorFunction {
     }
 }
 /*********End Texteditor Dropdown */
-
 
 /*
 TODO:

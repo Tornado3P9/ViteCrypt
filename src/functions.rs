@@ -1,15 +1,12 @@
-use iced::widget::{
-    TextInput, button, column, container, row, space, text,
-    text_editor, tooltip, slider, toggler, checkbox,
-};
-use iced::{
-    Element, Font, Length, Padding, Subscription, Task, Theme,
-    exit, keyboard,
-};
+use crate::Message;
+use crate::constants;
+use crate::errors::{CryptoError, Error};
 
-use iced::Alignment::Center;
+use constants::{GOOD_PASSWORD_LEN, KEY_LEN, MIN_MNEMONIC_WORDS, NONCE_LEN, SALT_LEN};
 
-use smol_str::SmolStr;
+// UI
+use iced::widget::{TextInput, button, container, text, text_editor, tooltip};
+use iced::{Element, Font, Length, Padding};
 
 use std::io;
 use std::path::{Path, PathBuf};
@@ -29,16 +26,6 @@ use zeroize::Zeroize;
 use image::{ImageBuffer, Luma, imageops::FilterType};
 use qrcodegen::{QrCode, QrCodeEcc};
 use rqrr;
-
-// Global Constants
-const MIN_PASSWORD_LEN: usize = 8; // defining the absolute minimum
-const GOOD_PASSWORD_LEN: usize = 12; // ok password length
-const MIN_MNEMONIC_WORDS: usize = 6; // min number of words, see is_mnemonic_passphrase()
-
-const SALT_LEN: usize = 16;
-const NONCE_LEN: usize = 12;
-const KEY_LEN: usize = 32; // 256-bit key
-
 
 /*********Start Encryption Func */
 
@@ -182,7 +169,6 @@ pub fn is_mnemonic_passphrase(s: &str) -> bool {
 //     // hovered/pressed optional overrides...
 // }
 
-
 // fn first_input_field(_placeholder: &str, _value: &str) -> TextInput<'static, Message> {
 //     TextInput::new(_placeholder, _value)
 //         .width(Length::Fill)
@@ -322,7 +308,7 @@ pub async fn pick_file(title_str: &str) -> Result<(PathBuf, Arc<String>), Error>
     load_file(handle.path().to_owned()).await
 }
 
-async fn load_file(path: PathBuf) -> Result<(PathBuf, Arc<String>), Error> {
+pub async fn load_file(path: PathBuf) -> Result<(PathBuf, Arc<String>), Error> {
     let contents = tokio::fs::read_to_string(&path)
         .await
         .map(Arc::new)
@@ -332,7 +318,7 @@ async fn load_file(path: PathBuf) -> Result<(PathBuf, Arc<String>), Error> {
     Ok((path, contents))
 }
 
-async fn save_file(path: Option<PathBuf>, text: String) -> Result<PathBuf, Error> {
+pub async fn save_file(path: Option<PathBuf>, text: String) -> Result<PathBuf, Error> {
     let path = if let Some(path) = path {
         path
     } else {
@@ -351,7 +337,7 @@ async fn save_file(path: Option<PathBuf>, text: String) -> Result<PathBuf, Error
     Ok(path)
 }
 
-async fn pick_qr_image(title_str: &str) -> Result<(PathBuf, Arc<String>), Error> {
+pub async fn pick_qr_image(title_str: &str) -> Result<(PathBuf, Arc<String>), Error> {
     let handle = rfd::AsyncFileDialog::new()
         .set_title(title_str)
         .pick_file()
@@ -361,7 +347,7 @@ async fn pick_qr_image(title_str: &str) -> Result<(PathBuf, Arc<String>), Error>
     load_qr_image(handle.path().to_owned()).await
 }
 
-async fn load_qr_image(path: PathBuf) -> Result<(PathBuf, Arc<String>), Error> {
+pub async fn load_qr_image(path: PathBuf) -> Result<(PathBuf, Arc<String>), Error> {
     // Read PNG bytes asynchronously
     let bytes: Vec<u8> = tokio::fs::read(&path)
         .await
@@ -522,7 +508,12 @@ fn write_to_png_scaled(
         .map_err(|e| format!("Failed to save PNG file: {}", e))
 }
 
-pub fn create_alphabet(include_lowercase: bool, include_uppercase: bool, include_numbers: bool, include_special: bool) -> String {
+pub fn create_alphabet(
+    include_lowercase: bool,
+    include_uppercase: bool,
+    include_numbers: bool,
+    include_special: bool,
+) -> String {
     let mut alphabet: String = String::new();
 
     if include_lowercase {
@@ -536,7 +527,7 @@ pub fn create_alphabet(include_lowercase: bool, include_uppercase: bool, include
     }
     if include_special {
         alphabet.push_str("!@#$%^&*()-_=+[]{}|;:',.<>?/\\~`");
-    }                            
+    }
 
     alphabet
 }
@@ -546,9 +537,7 @@ fn get_random_char(charset: &[u8]) -> char {
     charset[idx] as char
 }
 pub fn gen_random_pass(len: i32, charset: &[u8]) -> String {
-    let pass: String = (0..len)
-        .map(|_| get_random_char(&charset))
-        .collect();
+    let pass: String = (0..len).map(|_| get_random_char(&charset)).collect();
 
     pass
 }
@@ -586,7 +575,6 @@ pub fn generate_passphrase(wordlist: &[&str], n_words: usize) -> String {
     words.join(" ")
 }
 
-
 pub fn find_in_editor_content(
     content: &text_editor::Content,
     needle: &str,
@@ -599,15 +587,20 @@ pub fn find_in_editor_content(
         let text = line.text; // line.text is the line's &str
         if let Some(byte_pos) = text.find(needle) {
             return Some((
-                text_editor::Position { line: line_index, column: byte_pos },
-                text_editor::Position { line: line_index, column: byte_pos + needle.len() },
+                text_editor::Position {
+                    line: line_index,
+                    column: byte_pos,
+                },
+                text_editor::Position {
+                    line: line_index,
+                    column: byte_pos + needle.len(),
+                },
             ));
         }
     }
 
     None
 }
-
 
 pub fn count_non_overlapping(haystack: &str, needle: &str) -> usize {
     if needle.is_empty() {

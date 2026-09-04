@@ -10,7 +10,10 @@ fn run_status(cmd: &mut std::process::Command) -> io::Result<()> {
     if status.success() {
         Ok(())
     } else {
-        Err(io::Error::new(io::ErrorKind::Other, format!("command failed: {status}")))
+        Err(io::Error::new(
+            io::ErrorKind::Other,
+            format!("command failed: {status}"),
+        ))
     }
 }
 
@@ -41,7 +44,11 @@ pub fn get_clipboard_text() -> Option<String> {
     let s = run_capture_stdout(&mut cmd).ok()?;
     let s = s.trim_end_matches(&['\r', '\n'][..]).to_string();
 
-    if is_empty_or_whitespace(&s) { None } else { Some(s) }
+    if is_empty_or_whitespace(&s) {
+        None
+    } else {
+        Some(s)
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -67,7 +74,11 @@ pub fn get_clipboard_text() -> Option<String> {
     let s = run_capture_stdout(&mut cmd).ok()?;
     let s = s.trim_end_matches(&['\r', '\n'][..]).to_string();
 
-    if is_empty_or_whitespace(&s) { None } else { Some(s) }
+    if is_empty_or_whitespace(&s) {
+        None
+    } else {
+        Some(s)
+    }
 }
 
 #[cfg(target_os = "macos")]
@@ -257,18 +268,6 @@ pub fn set_clipboard_text(text: &str) -> bool {
 
     false
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // #[cfg(target_os = "linux")]
 // pub fn set_clipboard_text(text: &str) -> bool {
