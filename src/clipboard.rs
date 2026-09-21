@@ -5,6 +5,7 @@ fn is_empty_or_whitespace(s: &str) -> bool {
     s.trim().is_empty()
 }
 
+// Windows-only function
 fn run_status(cmd: &mut std::process::Command) -> io::Result<()> {
     let status = cmd.status()?;
     if status.success() {

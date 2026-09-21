@@ -83,7 +83,7 @@ struct Editor {
 }
 
 #[derive(Debug, Clone)]
-pub enum Message {
+enum Message {
     Edit(text_editor::Action),
     New,
     Open,
@@ -284,6 +284,10 @@ impl Editor {
                 self.error = None;
 
                 let text: String = self.content.text().to_string();
+                if text.is_empty() {
+                    println!("Set clipboard ok? false, nothing to copy!");
+                    return Task::none();
+                }
 
                 let ok: bool = clipboard::set_clipboard_text(&text);
                 println!("Set clipboard ok? {}", ok);
@@ -472,7 +476,6 @@ impl Editor {
                 }
 
                 let wordlist: Vec<&str> = load_wordlist();
-                // println!("wordlist.len() = {}", wordlist.len()); // Remove before flight!!
 
                 self.temp_passphrase =
                     generate_passphrase(&wordlist, self.mnemonic_slider_value as usize);
@@ -1137,18 +1140,14 @@ TODO:
 [_] Light Roundcornered border around containers
 [_] Round cornered generate password button
 [_] Different Color styles
-[_] https://deepwiki.com/iced-rs/iced/1.1-getting-started#common-widgets-and-macros
-  Stack stack![...]	Overlays widgets on top of each other, vielleicht kann ich damit ja as generate_password window mit transparentem overlay machen oder so...oder einfach kompletter overlay
 [_] Normale runde Schrift-Font als default, nur für den Texteditor halt eine gut lesbare schrift, wie aktuell. Das password input_text field zeigt ja eh Punkte.
 [x] Option to toggle on/off the password text input visibility/dots
 [x] Secure Text is not copy/paste-able anymore in 0.14.0, so i will have to display the generated password to the user in the generate password window itself and give warning message that the user
   has to secury the password before closing the generate window or the password will be lost.
-[_] DropDown Menu for QRcode? import/export or at least a dropdown menu for the different texteditor functions like find and replace
+[x] DropDown Menu for QRcode? import/export or at least a dropdown menu for the different texteditor functions like find and replace
 [x] or do find and replace as a line below the texteditor which is normally hidden and visibility can be toggled by yet another button on the top line
 [x] Error using find button in find and replace line. some characters like ** seem to irritate the counter for any following words and the wrong substring is highlighted! Correct the highlighting function!
 [_] Lizenzen
-[_] Clean clipboard after n seconds!
 [_] Was mache ich mit den qrcode leveln? aktuell benutze ich automatisch medium aber ich könnte den user das auch wählen lassen. vielleicht doch durch ein dropdown oder so
 [_] Optionally add encrypt text with gpg keys that are stored on the system, just like the notepad in kleopatra. basically turing it into a communication encryption tool using the extern gpg terminal tool via background process
-[_] Die ganzen println lines müssen ja auch gelöscht werden, bevor ich das echt benutze
 */

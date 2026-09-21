@@ -544,8 +544,11 @@ pub fn gen_random_pass(len: i32, charset: &[u8]) -> String {
 
 // Load embedded wordlist (one word per line, empty lines are ignored)
 pub fn load_wordlist() -> Vec<&'static str> {
-    let s: &'static str = include_str!("wordlist.txt");
-    s.lines().map(str::trim).filter(|l| !l.is_empty()).collect()
+    include_str!("wordlist.txt")
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect()
 }
 
 // Generate a secure random mnemonic passphrase of length x.
