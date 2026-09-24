@@ -1,5 +1,6 @@
 # ViteCrypt
 
+```bash
 # build release binary
 cargo build --release
 
@@ -14,3 +15,16 @@ cargo build --release --target x86_64-pc-windows-gnu
 rustup target list
 rustup target add aarch64-apple-darwin
 cargo build --release --target aarch64-apple-darwin
+
+# The clipboard operations are implemented using native operating-system APIs
+# or commonly available command-line utilities:
+#
+# - Windows: PowerShell and `System.Windows.Forms.Clipboard`
+# - macOS: `pbcopy` and `pbpaste`
+# - Linux/Wayland: `wl-copy` and `wl-paste`
+# - Linux/X11: `xclip` or `xsel`
+#
+# Clipboard access may fail when the required utility is unavailable,
+# the desktop session is not accessible, or the operating system denies
+# access to the clipboard.
+```
