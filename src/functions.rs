@@ -27,14 +27,30 @@ use image::{ImageBuffer, Luma, imageops::FilterType};
 use qrcodegen::{QrCode, QrCodeEcc};
 use rqrr;
 
-/*********Start Encryption Func */
 
+// -----------------------------------------------------------------------------
+// Password-Based Encryption
+// -----------------------------------------------------------------------------
+
+/// Derives a fixed-length encryption key from a password and salt using Argon2id.
+///
+/// The salt must have the configured length and should be generated using a
+/// cryptographically secure random-number generator. Argon2id is selected to
+/// provide resistance against both GPU-based and side-channel attacks.
+///
+/// The returned key material should be cleared from memory after use.
 fn derive_key_argon2(password: &str, salt: &[u8]) -> Result<[u8; KEY_LEN], CryptoError> {
     if salt.len() != SALT_LEN {
         return Err(CryptoError::KdfError);
     }
 
-    // Argon2id parameters (tune for your platform, e.g. memory: 256 MiB (262144 KiB) instead of 64 MB (65536 KiB), time (iterations): 6, parallelism: 4 not 1, None)
+    // Argon2id configuration:
+    // - Memory cost: 64 MiB
+    // - Time cost: 3 iterations
+    // - Parallelism: 1 lane
+    //
+    // Tune parameters for your platform, e.g.:
+    // memory: 256 MiB (262144 KiB) instead of 64 MB (65536 KiB), time (iterations): 6, parallelism: 4 not 1, None
     // Note: memory cost is the most important defense.
     let params = argon2::Params::new(65536, 3, 1, None).map_err(|_| CryptoError::KdfError)?;
     let argon2 = Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params);
@@ -46,6 +62,16 @@ fn derive_key_argon2(password: &str, salt: &[u8]) -> Result<[u8; KEY_LEN], Crypt
     Ok(key)
 }
 
+/// Encrypts plaintext using a password-derived AES-256-GCM key.
+///
+/// The returned blob has the following binary layout:
+///
+/// ```text
+/// salt || nonce || ciphertext
+/// ```
+///
+/// The salt and nonce are stored with the ciphertext because they do not need
+/// to remain secret. AES-GCM provides confidentiality and integrity protection.
 pub fn encrypt(password: &str, plaintext: &[u8]) -> Result<Vec<u8>, CryptoError> {
     // Generate salt and nonce
     let mut salt: [u8; 16] = [0u8; SALT_LEN];
@@ -75,44 +101,59 @@ pub fn encrypt(password: &str, plaintext: &[u8]) -> Result<Vec<u8>, CryptoError>
     blob.extend_from_slice(&ct);
 
     // Zero sensitive local stacks
-    // key_bytes and salt will be zeroized when dropped if we explicitly zeroize
+    // Explicitly clear sensitive key material before returning
     let mut key_bytes_owned: [u8; 32] = key_bytes;
     key_bytes_owned.zeroize();
     salt.zeroize();
+    nonce_bytes.zeroize();
 
     Ok(blob)
 }
 
+/// Decrypts an AES-256-GCM ciphertext using a password-derived key.
+///
+/// The input must contain at least a complete salt and nonce. Authentication
+/// failure, including an incorrect password or modified ciphertext, is reported
+/// as a decryption error.
 pub fn decrypt(password: &str, blob: &[u8]) -> Result<Vec<u8>, CryptoError> {
     if blob.len() < SALT_LEN + NONCE_LEN {
         return Err(CryptoError::InvalidInput);
     }
 
+    // Parse the serialized encryption components from the input blob.
     let salt: &[u8] = &blob[0..SALT_LEN];
     let nonce_bytes: &[u8] = &blob[SALT_LEN..SALT_LEN + NONCE_LEN];
     let ct: &[u8] = &blob[SALT_LEN + NONCE_LEN..];
 
+    // Recreate the encryption key using the stored salt.
     let key_bytes: [u8; 32] = derive_key_argon2(password, salt)?;
     let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
     let cipher = Aes256Gcm::new(key);
     let nonce = Nonce::from_slice(nonce_bytes);
 
+    // Decryption also verifies the AES-GCM authentication tag.
     let plaintext: Vec<u8> = cipher
         .decrypt(nonce, ct)
         .map_err(|_| CryptoError::DecryptError)?;
 
-    // zeroize key material before returning
+    // Clear the temporary key buffer before returning the plaintext.
     let mut key_bytes_owned: [u8; 32] = key_bytes;
     key_bytes_owned.zeroize();
 
     Ok(plaintext)
 }
 
-/*********End Encryption Func */
+// -----------------------------------------------------------------------------
+// Password Validation
+// -----------------------------------------------------------------------------
 
-/*********Start Check Password Func */
-
+/// Returns `true` when the password satisfies the configured complexity rules.
+///
+/// The password must contain at least the minimum required number of bytes and
+/// include uppercase characters, lowercase characters, decimal digits, and
+/// non-alphanumeric characters.
 pub fn is_strong_passphrase(s: &str) -> bool {
+    // Check the minimum length before performing character classification.
     if s.len() < GOOD_PASSWORD_LEN {
         return false;
     }
@@ -123,64 +164,46 @@ pub fn is_strong_passphrase(s: &str) -> bool {
     has_upper && has_lower && has_digit && has_special
 }
 
-// Returns true if `s` is a mnemonic passphrase consisting of at least `min_words`
-// words separated by a single space (no leading/trailing spaces, no consecutive spaces).
+/// Returns `true` when the input contains the required number of words.
+///
+/// Words must be separated by exactly one ASCII space. Leading spaces,
+/// trailing spaces, consecutive spaces, and empty input are rejected.
 pub fn is_mnemonic_passphrase(s: &str) -> bool {
     if MIN_MNEMONIC_WORDS == 0 {
         return false;
     }
-    // Quick rejects: length too short for required words, or leading/trailing space
+
+    // Reject empty input and invalid leading or trailing whitespace.
     if s.is_empty() || s.starts_with(' ') || s.ends_with(' ') {
         return false;
     }
+
+    // Reject inputs shorter than the configured minimum format.
     // 6 words of min 5 letters, each separated by one space make: (6*5)+(6-1) = 35
     // let min_len: usize = (MIN_MNEMONIC_WORDS*5)+(MIN_MNEMONIC_WORDS-1);
     if s.len() < 35 {
         return false;
     }
-    // Split on single space and ensure no empty segments (which would indicate consecutive spaces)
+
+    // Splitting on a literal space allows consecutive spaces to be detected.
     let parts: Vec<&str> = s.split(' ').collect();
     if parts.len() < MIN_MNEMONIC_WORDS {
         return false;
     }
+
+    // Empty segments indicate consecutive spaces.
     if parts.iter().any(|p| p.is_empty()) {
         return false;
     }
-    // Optionally also check if words are all equal or different
+
     true
 }
 
-/*********End Check Password Func */
+// -----------------------------------------------------------------------------
+// User-Interface Helpers
+// -----------------------------------------------------------------------------
 
-// use iced::{button, Background, Color};
-// struct SecondaryButton;
-// impl button::StyleSheet for SecondaryButton {
-//     type Style = ();
-//     fn active(&self, _style: &Self::Style) -> button::Appearance {
-//         button::Appearance {
-//             background: Some(Background::Color(Color::from_rgb8(0xEE,0xEE,0xEE))),
-//             border_radius: 4.0,
-//             shadow_offset: Default::default(),
-//             text_color: Color::BLACK,
-//             border_width: 0.0,
-//             border_color: Color::TRANSPARENT,
-//         }
-//     }
-//     // hovered/pressed optional overrides...
-// }
-
-// fn first_input_field(_placeholder: &str, _value: &str) -> TextInput<'static, Message> {
-//     TextInput::new(_placeholder, _value)
-//         .width(Length::Fill)
-//         .padding(Padding::from(10))
-//         .line_height(text::LineHeight::Relative(1.75))
-//         .on_input(Message::FirstChanged)
-//         .password()
-// }
-// fn second_input_field(_placeholder: &str, _value: &str) -> TextInput<'static, Message> {
-//     ...
-// }
-
+/// Creates a password input field with optional secure-text masking.
 pub fn password_input_field<F>(
     placeholder: &str,
     value: &str,
@@ -204,6 +227,10 @@ where
         .secure(secure_status) // in 0.14.0 changed from .password() 0.12.0
 }
 
+/// Creates an action button with an optional tooltip.
+///
+/// The button uses a disabled style when no action is provided. The tooltip
+/// label is retained for the `'static` lifetime required by the UI framework.
 pub fn action(
     content: Element<'static, Message>,
     label: String,
@@ -232,6 +259,7 @@ pub fn action(
     .into()
 }
 
+/// Returns the appropriate eye icon for the current password visibility state.
 pub fn eye_icon<'a>(visible: bool) -> Element<'a, Message> {
     if visible {
         icon('\u{E804}')
@@ -240,34 +268,42 @@ pub fn eye_icon<'a>(visible: bool) -> Element<'a, Message> {
     }
 }
 
+/// Returns the icon used for creating a new document.
 pub fn new_icon<'a>() -> Element<'a, Message> {
     icon('\u{E802}')
 }
 
+/// Returns the icon used for opening a document.
 pub fn open_icon<'a>() -> Element<'a, Message> {
     icon('\u{F115}')
 }
 
+/// Returns the icon used for saving a document.
 pub fn save_icon<'a>() -> Element<'a, Message> {
     icon('\u{E803}')
 }
 
+/// Returns the icon used for opening/reading a QR code
 pub fn qrcode_open_icon<'a>() -> Element<'a, Message> {
     icon('\u{E800}')
 }
 
+/// Returns the icon used for saving a QR code
 pub fn qrcode_save_icon<'a>() -> Element<'a, Message> {
     icon('\u{E801}')
 }
 
+/// Returns the icon used for copying the texteditor content to the clipboard
 pub fn copy_icon<'a>() -> Element<'a, Message> {
     icon('\u{F0C5}')
 }
 
+/// Returns the icon used for pasting the clipboard content to the texteditor field
 pub fn paste_icon<'a>() -> Element<'a, Message> {
     icon('\u{F0EA}')
 }
 
+/// Creates a text element using the application's icon font of size 18.
 fn icon<'a, Message>(codepoint: char) -> Element<'a, Message> {
     const ICON_FONT: Font = Font::with_name("editor-icons");
 
@@ -275,6 +311,7 @@ fn icon<'a, Message>(codepoint: char) -> Element<'a, Message> {
     text(codepoint).font(ICON_FONT).size(18).into()
 }
 
+/// Returns the icon used for the texteditor search bar
 pub fn lupe_icon<'a>() -> Element<'a, Message> {
     icon_b('\u{E80C}')
 }
@@ -291,6 +328,7 @@ pub fn lupe_icon<'a>() -> Element<'a, Message> {
 //     icon_b('\u{E808}')
 // }
 
+/// Creates a text element using the application's icon font but using font size 16.
 fn icon_b<'a, Message>(codepoint: char) -> Element<'a, Message> {
     const ICON_FONT: Font = Font::with_name("editor-icons");
 
@@ -298,6 +336,11 @@ fn icon_b<'a, Message>(codepoint: char) -> Element<'a, Message> {
     text(codepoint).font(ICON_FONT).size(16).into()
 }
 
+// -----------------------------------------------------------------------------
+// Asynchronous File Operations
+// -----------------------------------------------------------------------------
+
+/// Opens a file-selection dialog and loads the selected text file.
 pub async fn pick_file(title_str: &str) -> Result<(PathBuf, Arc<String>), Error> {
     let handle = rfd::AsyncFileDialog::new()
         .set_title(title_str)
@@ -308,6 +351,7 @@ pub async fn pick_file(title_str: &str) -> Result<(PathBuf, Arc<String>), Error>
     load_file(handle.path().to_owned()).await
 }
 
+/// Reads a UTF-8 text file asynchronously.
 pub async fn load_file(path: PathBuf) -> Result<(PathBuf, Arc<String>), Error> {
     let contents = tokio::fs::read_to_string(&path)
         .await
@@ -318,6 +362,7 @@ pub async fn load_file(path: PathBuf) -> Result<(PathBuf, Arc<String>), Error> {
     Ok((path, contents))
 }
 
+/// Saves text to the specified path or prompts the user for a destination path.
 pub async fn save_file(path: Option<PathBuf>, text: String) -> Result<PathBuf, Error> {
     let path = if let Some(path) = path {
         path
@@ -337,6 +382,11 @@ pub async fn save_file(path: Option<PathBuf>, text: String) -> Result<PathBuf, E
     Ok(path)
 }
 
+// -----------------------------------------------------------------------------
+// QR-Code Image Operations
+// -----------------------------------------------------------------------------
+
+/// Opens a file-selection dialog and decodes the selected QR-code image.
 pub async fn pick_qr_image(title_str: &str) -> Result<(PathBuf, Arc<String>), Error> {
     let handle = rfd::AsyncFileDialog::new()
         .set_title(title_str)
@@ -347,6 +397,7 @@ pub async fn pick_qr_image(title_str: &str) -> Result<(PathBuf, Arc<String>), Er
     load_qr_image(handle.path().to_owned()).await
 }
 
+/// Loads an image, converts it to grayscale, and decodes the first detected QR code.
 pub async fn load_qr_image(path: PathBuf) -> Result<(PathBuf, Arc<String>), Error> {
     // Read PNG bytes asynchronously
     let bytes: Vec<u8> = tokio::fs::read(&path)
@@ -378,6 +429,11 @@ pub async fn load_qr_image(path: PathBuf) -> Result<(PathBuf, Arc<String>), Erro
     Ok((path, Arc::new(content)))
 }
 
+/// Encodes text into one or more QR-code PNG files.
+///
+/// If the input exceeds the selected QR-code capacity, it is divided into
+/// multiple numbered files. The QR-code error-correction level determines the
+/// maximum payload size.
 pub async fn save_qr_image(
     text: String,
     ecc: QrCodeEcc,
@@ -464,14 +520,16 @@ pub async fn save_qr_image(
     Ok(path)
 }
 
-// Writes the given QrCode object to a PNG image with the specified scale and border width.
+/// Renders a QR code to a scaled grayscale PNG image.
+///
+/// A nearest-neighbor filter is used to preserve the sharp edges of QR modules.
 fn write_to_png_scaled(
     qr: &QrCode,
     border: i32,
     scale_factor: u32,
     file_path: &Path,
 ) -> Result<(), String> {
-    // Validate inputs
+    // Validate rendering parameters before allocating the output image.
     if border < 0 {
         return Err("Border must be non-negative".to_string());
     }
@@ -479,13 +537,13 @@ fn write_to_png_scaled(
         return Err("Scale factor must be positive".to_string());
     }
 
-    // Calculate image size
+    // Calculate the unscaled image dimensions, including the quiet-zone border.
     let size: i32 = qr.size();
     let img_size: u32 = (size + 2 * border) as u32;
     let mut img: ImageBuffer<Luma<u8>, Vec<u8>> =
         ImageBuffer::from_pixel(img_size, img_size, Luma([255u8]));
 
-    // Draw QR code onto the image
+    // Render each active QR module as a black pixel.
     for y in 0..size {
         for x in 0..size {
             if qr.get_module(x, y) {
@@ -494,7 +552,7 @@ fn write_to_png_scaled(
         }
     }
 
-    // Scale the image
+    // Scale the image without smoothing to preserve QR-code readability.
     let scaled_img: ImageBuffer<Luma<u8>, Vec<u8>> = image::imageops::resize(
         &img,
         img_size * scale_factor,
@@ -502,12 +560,17 @@ fn write_to_png_scaled(
         FilterType::Nearest,
     );
 
-    // Save the scaled image as a PNG file
+    // Write the final image to disk.
     scaled_img
         .save(file_path)
         .map_err(|e| format!("Failed to save PNG file: {}", e))
 }
 
+// -----------------------------------------------------------------------------
+// Password and Passphrase Generation
+// -----------------------------------------------------------------------------
+
+/// Builds a character set from the requested character categories.
 pub fn create_alphabet(
     include_lowercase: bool,
     include_uppercase: bool,
@@ -531,11 +594,15 @@ pub fn create_alphabet(
 
     alphabet
 }
+
+/// Selects a random character from the supplied character set.
 fn get_random_char(charset: &[u8]) -> char {
     let mut rng: OsRng = OsRng;
     let idx: usize = rng.next_u32() as usize % charset.len();
     charset[idx] as char
 }
+
+/// Generates a random password with the requested length and character set.
 pub fn gen_random_pass(len: i32, charset: &[u8]) -> String {
     let pass: String = (0..len).map(|_| get_random_char(&charset)).collect();
 
@@ -551,7 +618,11 @@ pub fn load_wordlist() -> Vec<&'static str> {
         .collect()
 }
 
-// Generate a secure random mnemonic passphrase of length x.
+/// Generates a passphrase by selecting words uniformly from the supplied
+/// dictionary.
+///
+/// Rejection sampling is used to avoid modulo bias when converting random
+/// values into word-list indices.
 pub fn generate_passphrase(wordlist: &[&str], n_words: usize) -> String {
     let mut rng: OsRng = OsRng; // from aes_gcm::aead
     let wl_len: usize = wordlist.len();
