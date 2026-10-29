@@ -47,6 +47,8 @@ fn main() -> iced::Result {
         .run()
 }
 
+/// Holds the application's editor state, including the current document,
+/// editing and search controls, validation data, and related UI state.
 struct Editor {
     path: Option<PathBuf>,
     content: text_editor::Content,
@@ -927,6 +929,7 @@ impl Editor {
             row![status, space::horizontal(), position]
         };
 
+        // The Application window is split into two sides, the left side holding the encryption part, the right side holding the text editor
         let left = container(
             column![
                 controls_title_bar,
@@ -942,13 +945,15 @@ impl Editor {
         .width(Length::FillPortion(2))
         .padding(Padding::new(0.).top(20).right(0).bottom(0).left(20));
 
-        // /***************Start Func */
+        // // -- Start pick_list
         // let dropdown = pick_list(
         //     &[EditorFunction::RemoveLineBreaks, EditorFunction::RemoveSpaces][..],
         //     None,
         //     Message::FunctionSelected,
         // ).placeholder("Choose a function...");
-        // /***************End Func */
+        // // -- End pick_list
+
+        // The Application window is split into two sides, the left side holding the encryption part, the right side holding the text editor
         let right = container(
             column![editor_controls, editor_input, editor_status_bar]
                 .spacing(10)
@@ -956,13 +961,18 @@ impl Editor {
         )
         .width(Length::FillPortion(3));
 
-        // container(row![left, right].spacing(35)).padding(10).into() // the original final line
+        // // This is the previously final line before using the extern dialog overlay widget
+        // container(row![left, right].spacing(35)).padding(10).into()
+
+        // -- Begin of the Popup Overlay Menu
+        // This is the base or root level of the program and the outer most container which holds everything else in it.
+        // In order for me to use the "dialog widget" for the password generator overlay window with the transparent background,
+        // I had to assign that outer most layer to it via the variable "base". That's what the dialog widget uses to understand the screen dimensions.
+        // IMPORTANT: make the base fill the screen
         let base = container(row![left, right].spacing(35)).padding(10);
 
-        /**** Popup Overlay Menu ****/
-
-        // IMPORTANT: make the base fill the screen
-        // The base is that thing which fills the screen, meaning the outer most box. That's what dialog widget uses to understand the screen dimensions.
+        // Creates the password and mnemonic-passphrase buttons for choosing a password-generation option,
+        // highlighting the currently selected option.
         let gen_buttons_row = {
             let random_pass = button("Random password")
                 .style(if self.passphrase_button {
@@ -992,6 +1002,7 @@ impl Editor {
             pass_container
         };
 
+        // Creates another row containing multiple options to refine the previous selections.
         let pass_slider = slider(12..=200, self.pass_slider_value, Message::PassSliderChanged)
             .step(1)
             .width(350)
@@ -1005,6 +1016,8 @@ impl Editor {
         .spacing(20)
         .align_y(iced::Alignment::Center);
 
+        // Creates a row containing the mnemonic slider, which lets the user choose
+        // the number of words in the passphrase.
         let mnemonic_slider = slider(
             5..=30,
             self.mnemonic_slider_value,
@@ -1022,6 +1035,8 @@ impl Editor {
         .spacing(20)
         .align_y(iced::Alignment::Center);
 
+        // Creates a row of controls for selecting which character types to include
+        // when generating a password.
         let cb_a = checkbox(self.a).on_toggle(Message::A);
         let cb_a_label = text("Lowercase").size(14);
         let cb_b = checkbox(self.b).on_toggle(Message::B);
@@ -1045,6 +1060,9 @@ impl Editor {
         .spacing(20)
         .align_y(iced::Alignment::Center);
 
+        // Creates the content row containing the option-refinement rows described above.
+        // Also adds a read-only text input displaying the generated password or passphrase.
+        // Below that a text description of each option, its pros and cons, and when to use it.
         let content = container(column![
             text("Choose between a random password or a mnemonic passphrase.").size(14),
             gen_buttons_row,
@@ -1067,6 +1085,11 @@ impl Editor {
             .into()
     }
 
+    /// Recomputes the password strength and confirmation-match messages
+    /// from the current input fields.
+    ///
+    /// Called as the user types so the UI can display updated validation
+    /// feedback immediately.
     fn recompute_validation(&self) -> (String, String) {
         if self.first.len() < MIN_PASSWORD_LEN {
             (
