@@ -25,6 +25,7 @@ fn is_empty_or_whitespace(s: &str) -> bool {
 ///
 /// The command's exit status is included in the returned error when execution
 /// fails or the process exits with a non-zero status.
+#[cfg(target_os = "windows")]
 fn run_status(cmd: &mut std::process::Command) -> io::Result<()> {
     let status = cmd.status()?;
     if status.success() {
