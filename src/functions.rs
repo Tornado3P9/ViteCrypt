@@ -4,16 +4,16 @@ use crate::errors::{CryptoError, Error};
 
 use constants::{GOOD_PASSWORD_LEN, KEY_LEN, MIN_MNEMONIC_WORDS, NONCE_LEN, SALT_LEN};
 
-// UI
-use iced::widget::{TextInput, button, container, text, text_editor, tooltip};
-use iced::{Element, Font, Length, Padding};
-
 use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
-// Encryption Algorithm
+// UI
+use iced::widget::{TextInput, button, container, text, text_editor, tooltip};
+use iced::{Element, Font, Length, Padding};
+
+// Encryption
 use aes_gcm::{
     Aes256Gcm, Key, Nonce,
     aead::rand_core::RngCore,

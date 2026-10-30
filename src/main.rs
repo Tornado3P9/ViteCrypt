@@ -618,6 +618,7 @@ impl Editor {
         }
     }
 
+    // Global keyboard shortcuts using Iced's subscription API.
     fn subscription(&self) -> Subscription<Message> {
         keyboard::listen().filter_map(|event| match event {
             keyboard::Event::KeyPressed { key, modifiers, .. } => match key {
@@ -656,11 +657,21 @@ impl Editor {
     }
 
     fn view(&self) -> Element<'_, Message> {
+
+        // Simple Text Label element displaying the word "Controls"
+        // ( because i don't know what else to write besides that this side of the program
+        // contains the main controls elements )
+        // in the left container
         let controls_title_bar = {
             let controls_title = text("Controls").size(15);
             row![controls_title, space::horizontal()]
         }; // Space::new(Length::Fill, Length::Units(0))
 
+        // Inconspicuous region above the password input lines
+        // containing a spacing element and the "Generate password" button
+        // ( which, when pressed, will display an overlay window with multiple options
+        // for creating a mnemonic passphrase or a random password )
+        // in the left container
         let controls_gen_pw_row = {
             let content = column![
                 button("Generate password")
@@ -672,6 +683,8 @@ impl Editor {
             row![space::horizontal(), content_container]
         };
 
+        // First password input line
+        // in the left container
         let controls_primary_pw = {
             let prim_pw_label = text(format!("{}", "Password".to_string())).size(13);
             let prim_pw_input = row![
@@ -691,6 +704,8 @@ impl Editor {
             column![prim_pw_label, prim_pw_input].spacing(1)
         };
 
+        // Second password input line
+        // in the left container
         let controls_secondary_pw = {
             let second_pw_label = text(format!("{}", "Confirm Password".to_string())).size(13);
             let second_pw_input = password_input_field(
@@ -703,6 +718,8 @@ impl Editor {
             column![second_pw_label, second_pw_input].spacing(1)
         };
 
+        // Main Buttons for en-/decrypting the text editor content
+        // in the left container
         let controls_encrypt_buttons = {
             let encrypt_button = row![
                 button(text("Encrypt").center().size(18))
@@ -730,6 +747,9 @@ impl Editor {
                 .padding([10, 0])
         };
 
+        // This is just a column, containing text info lines and a spacing element
+        // below the controls_encrypt_buttons
+        // in the left container
         let controls_pw_check_response = {
             let (validation_text_pw_strength, validation_text_pw_match) = self.validation.clone();
 
@@ -774,6 +794,8 @@ impl Editor {
             .spacing(1)
         };
 
+        // This is the button row just above the text editor field
+        // in the right container
         let editor_controls = row![
             action(new_icon(), "New file".to_string(), Some(Message::New)),
             action(open_icon(), "Open file".to_string(), Some(Message::Open)),
@@ -833,6 +855,9 @@ impl Editor {
         //     ..container::Style::default()
         // });
 
+        // "Lupe" is german for "Magnifying glass" because that's what the icon image looks like.
+        // "lupe_row" is part of "find_and_replace_row"
+        // in the right container
         let lupe_row = container(if self.found == 0usize {
             row![lupe_icon()]
                 .spacing(8)
@@ -856,6 +881,8 @@ impl Editor {
             ..container::Style::default()
         });
 
+        // The pick_list widget lets the user choose a function that will be applied to the text editor content.
+        // "function_picker" is part of "find_and_replace_row".
         let function_picker = pick_list(
             EditorFunction::ALL,
             self.selected_function,
@@ -863,6 +890,7 @@ impl Editor {
         )
         .placeholder("choose");
 
+        // The "find_and_replace_row" above the texte ditor field, which can be toggled via the shortcut "Ctrl+F".
         let find_and_replace_row: Element<_> = if self.find_and_replace_visibility {
             row![
                 lupe_row,
@@ -888,6 +916,11 @@ impl Editor {
         } else {
             iced::widget::Space::new().into() // or column![].into()
         };
+
+        // The actual multi-line text editor field via the default text_editor widget
+        // including the "find_and_replace_row" which can be toggled via the shortcut "Ctrl+F".
+        // The editor has the id "input3", though even without it, iced allows jumping between
+        // input fields using the "TAB-Key".
         let editor_input = column![
             find_and_replace_row,
             text_editor(&self.content)
@@ -896,6 +929,7 @@ impl Editor {
                 .height(Length::Fill),
         ];
 
+        // An additional line just below the text editor field displaying the curser position and status/error messages
         let editor_status_bar = {
             // let status = if let Some(Error::IOFailed(error)) = self.error.as_ref() {
             //     text(error.to_string()).size(14)
@@ -1075,6 +1109,8 @@ impl Editor {
                 .line_height(text::LineHeight::Relative(1.75)),
             text("  Random password: characters, numbers, symbols – good for single-use secrets.\n  Mnemonic passphrase: a sequence of common words – easier to remember and type.").size(14),
         ].spacing(10));
+
+        // Putting the dialog together
         iced_dialog::dialog(self.is_open, base, content)
             .title("Generate password")
             .push_button(iced_dialog::button("Cancel", Message::Cancelled).style(button::subtle))
