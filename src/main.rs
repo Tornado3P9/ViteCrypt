@@ -15,7 +15,7 @@ use iced::widget::{
     TextInput, button, checkbox, column, container, row, slider, space, text, text_editor, toggler,
     tooltip,
 };
-use iced::{Element, Length, Padding, Subscription, Task, Theme, exit, keyboard};
+use iced::{Border, Color, Element, Length, Padding, Subscription, Task, Theme, exit, keyboard};
 use smol_str::SmolStr;
 
 use functions::{
@@ -982,7 +982,30 @@ impl Editor {
             .spacing(10),
         )
         .width(Length::FillPortion(2))
-        .padding(Padding::new(0.).top(20).right(0).bottom(0).left(20));
+        .padding(Padding::new(0.).top(20).right(20).bottom(0).left(20))
+        .style(|_theme| container::Style {
+            border: Border {
+                color: Color::from_rgb8(0x50, 0x54, 0x5d),
+                width: 1.0,
+                radius: 10.0.into(),
+            },
+            ..Default::default()
+        });
+
+        // // Example for border style
+        // container(
+        //     column![text("Inside the bordered container")]
+        // )
+        // .padding(8)
+        // .style(|_theme| container::Style {
+        //     border: Border {
+        //         color: Color::WHITE,
+        //         width: 1.0,
+        //         radius: 0.0.into(),
+        //     },
+        //     ..Default::default()
+        // })
+        // .into()
 
         // // -- Start pick_list
         // let dropdown = pick_list(
