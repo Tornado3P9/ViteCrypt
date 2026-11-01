@@ -1006,6 +1006,12 @@ impl Editor {
         //     ..Default::default()
         // })
         // .into()
+        //
+        // let border = Border {
+        //     color: color!("#50545d"),
+        //     width: 1.0,
+        //     radius: 0.0.into(),
+        // };
 
         // // -- Start pick_list
         // let dropdown = pick_list(
