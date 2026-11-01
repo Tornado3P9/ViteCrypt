@@ -55,37 +55,39 @@ struct Editor {
     error: Option<Error>,
     theme: Theme,
     is_dirty: bool,
+
+    // Variable for the theme toggle switch on the right side
+    toggler_is_switched: bool,
+
+    // Variables for the hidden search-and-replace controls for the text editor (Ctrl+F)
     search: String,
     replace_with: String,
     find_and_replace_visibility: bool,
     found: usize,
     selected_function: Option<EditorFunction>,
 
+    // Variables for the Password Input buttons on the left side
     first: String,
     second: String,
     validation: (String, String),
-
     is_password_visible: bool,
 
+    // Variables for the generate-password dialog overlay
     is_open: bool,
-
     passphrase_button: bool,
     mnemonic_button: bool,
-
     a: bool,
     b: bool,
     c: bool,
     d: bool,
-
     temp_passphrase: String,
     pass_slider_value: i32,
     mnemonic_slider_value: i32,
-
-    toggler_is_switched: bool,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
+    // Button panel for the editor controls, positioned above the text editor content
     Edit(text_editor::Action),
     New,
     Open,
@@ -99,38 +101,41 @@ enum Message {
     Copy,
     Paste,
 
+    // Theme toggle switch on the right side
+    ToggleTheme(bool),
+
+    // Hidden search-and-replace controls for the text editor (Ctrl+F)
     SearchChanged(String),
     ReplaceChanged(String),
     FindSelect,
     ToggleRow,
     FunctionSelected(EditorFunction),
 
-    ToggleTheme(bool),
-
+    // Functions for the buttons on the left side
     Encrypt,
     Decrypt,
     ClearAll,
-    Exit,
 
+    // Functions for the password input field on the left side
     FirstChanged(String),
     SecondChanged(String),
     TogglePasswordVisibility,
 
+    // Additional keyboard shortcut functions
+    Exit,
     TabPressed,
     ShiftTabPressed,
 
+    // Elements for the generate-password dialog overlay
     OpenDialog,
     Applied,
     Cancelled,
-
     PassBtnPressed,
     MnemonicBtnPressed,
-
     A(bool),
     B(bool),
     C(bool),
     D(bool),
-
     PassSliderChanged(i32),
     MnemomicSliderChanged(i32),
 }
