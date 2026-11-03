@@ -216,7 +216,13 @@ where
 {
     TextInput::new(placeholder, value)
         .width(Length::Fill)
-        .padding(Padding::from(10))
+        // .padding(Padding::from(10))
+        .padding(Padding {
+            top: 8.0,
+            right: 10.0,
+            bottom: 8.0,
+            left: 10.0,
+        })
         .line_height(text::LineHeight::Relative(1.75))
         // .id(iced::widget::Id::unique())
         // .id(tab_key_id) // If tab_key_id is a String
@@ -225,6 +231,11 @@ where
         // .id(iced::widget::Id::from(tab_key_id)) // Or use Id::from() explicitly
         .on_input(on_change)
         .secure(secure_status) // in 0.14.0 changed from .password() 0.12.0
+        .style(|theme, status| {
+            let mut style = iced::widget::text_input::default(theme, status);
+            style.border.radius = 8.0.into();
+            style
+        })
 }
 
 /// Creates an action button with an optional tooltip.
@@ -236,22 +247,32 @@ pub fn action(
     label: String,
     on_press: Option<Message>,
 ) -> Element<'static, Message> {
-    let is_disabled: bool = on_press.is_none();
+    // let is_disabled: bool = on_press.is_none();
     let label_ref: &str = Box::leak(label.into_boxed_str()); // converts owned String to 'static &str
 
     tooltip(
         button(container(content).width(30).center_x(30))
             .on_press_maybe(on_press)
             .padding([5, 10])
-            .style(if is_disabled {
-                button::secondary
-            } else {
-                button::primary
+            // .style(if is_disabled {
+            //     button::secondary
+            // } else {
+            //     button::primary
+            // }),
+            .style(move |theme, status| {
+                // let mut style = if is_disabled {
+                //     button::secondary(theme, status)
+                // } else {
+                //     button::primary(theme, status)
+                // };
+                let mut style = button::text(theme, status);
+                style.border.radius = 8.0.into();
+                style
             }),
-        // text(label_ref).size(24),
-        label_ref,
-        tooltip::Position::Bottom,
-        // tooltip::Position::FollowCursor,
+            // text(label_ref).size(24),
+            label_ref,
+            tooltip::Position::Bottom,
+            // tooltip::Position::FollowCursor,
     )
     .delay(Duration::from_millis(500)) // default is Duration::ZERO
     .style(container::rounded_box)

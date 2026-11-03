@@ -668,7 +668,7 @@ impl Editor {
         // contains the main controls elements )
         // in the left container
         let controls_title_bar = {
-            let controls_title = text("Controls").size(15);
+            let controls_title = text("v1.1").size(15); //text("Controls").size(15);
             row![controls_title, space::horizontal()]
         }; // Space::new(Length::Fill, Length::Units(0))
 
@@ -679,10 +679,15 @@ impl Editor {
         // in the left container
         let controls_gen_pw_row = {
             let content = column![
-                button("Generate password")
-                    .style(button::subtle)
+                button(text("Generate password").center().size(14)) //button("Generate password")
+                    // .style(button::subtle)
+                    .style(|theme, status| {
+                        let mut style = iced::widget::button::subtle(theme, status);
+                        style.border.radius = 15.0.into();
+                        style
+                    })
                     .on_press(Message::OpenDialog)
-                    .padding(Padding::new(0.).top(6).right(10).bottom(7).left(10))
+                    .padding(Padding::new(0.).top(6).right(11).bottom(7).left(11))
             ];
             let content_container: Element<'_, Message> = container(content).into();
             row![space::horizontal(), content_container]
@@ -691,7 +696,7 @@ impl Editor {
         // First password input line
         // in the left container
         let controls_primary_pw = {
-            let prim_pw_label = text(format!("{}", "Password".to_string())).size(13);
+            let prim_pw_label = container(text("Password").size(13)).padding(iced::padding::left(5)); //text(format!("{}", "Password".to_string())).size(13);
             let prim_pw_input = row![
                 password_input_field(
                     "First",
@@ -712,7 +717,7 @@ impl Editor {
         // Second password input line
         // in the left container
         let controls_secondary_pw = {
-            let second_pw_label = text(format!("{}", "Confirm Password".to_string())).size(13);
+            let second_pw_label = container(text("Confirm Password").size(13)).padding(iced::padding::left(5)); //text(format!("{}", "Confirm Password".to_string())).size(13);
             let second_pw_input = password_input_field(
                 "Second",
                 &self.second,
@@ -730,22 +735,39 @@ impl Editor {
                 button(text("Encrypt").center().size(18))
                     .on_press(Message::Encrypt)
                     .width(Length::Fill)
-                    .padding(Padding::new(0.).top(8).right(10).bottom(9).left(10))
-                    .style(button::primary)
+                    .padding(Padding::new(0.).top(10).right(10).bottom(11).left(10))
+                    // .style(button::primary)
+                    .style(|theme, status| {
+                        let mut style = iced::widget::button::primary(theme, status);
+                        style.border.radius = 6.0.into();
+                        style
+                    })
             ];
             let decrypt_button = row![
                 button(text("Decrypt").center().size(18))
                     .on_press(Message::Decrypt)
                     .width(Length::Fill)
-                    .padding(Padding::new(0.).top(8).right(10).bottom(9).left(10))
-                    .style(button::secondary)
+                    // .padding(Padding::new(0.).top(8).right(10).bottom(9).left(10))
+                    .padding(Padding::new(0.).top(9).right(10).bottom(10).left(10))
+                    // .style(button::secondary)
+                    .style(|theme, status| {
+                        let mut style = iced::widget::button::secondary(theme, status);
+                        style.border.radius = 6.0.into();
+                        style
+                    })
             ];
             let clear_button = row![
                 button(text("Clear").center().size(18))
                     .on_press(Message::ClearAll)
                     .width(Length::Fill)
-                    .padding(Padding::new(0.).top(8).right(10).bottom(9).left(10))
-                    .style(button::secondary)
+                    // .padding(Padding::new(0.).top(8).right(10).bottom(9).left(10))
+                    .padding(Padding::new(0.).top(9).right(10).bottom(10).left(10))
+                    // .style(button::secondary)
+                    .style(|theme, status| {
+                        let mut style = iced::widget::button::secondary(theme, status);
+                        style.border.radius = 6.0.into();
+                        style
+                    })
             ];
             column![encrypt_button, decrypt_button, clear_button]
                 .spacing(10)
@@ -931,7 +953,13 @@ impl Editor {
             text_editor(&self.content)
                 .id(iced::widget::Id::new("input3"))
                 .on_action(Message::Edit)
-                .height(Length::Fill),
+                .height(Length::Fill)
+                .style(|theme, status| {
+                    let mut style = iced::widget::text_editor::default(theme, status);
+                    style.border.radius = 10.0.into();
+                    style
+                })
+                .padding(10),
         ];
 
         // An additional line just below the text editor field displaying the curser position and status/error messages
@@ -946,14 +974,14 @@ impl Editor {
             // };
             /* For better readability: */
             let status = match self.error.as_ref() {
-                Some(Error::IOFailed(e)) => text(e.to_string()).size(14),
+                Some(Error::IOFailed(e)) => text(e.to_string()).size(13),
                 _ => {
                     let label = self
                         .path
                         .as_deref()
                         .and_then(|p| p.to_str())
                         .unwrap_or("New file");
-                    text(label).size(14)
+                    text(label).size(13)
                 }
             };
 
@@ -962,7 +990,7 @@ impl Editor {
                 let line: usize = cursor.position.line;
                 let column: usize = cursor.position.column;
 
-                text(format!("{}:{}", line + 1, column + 1))
+                text(format!("{}:{}", line + 1, column + 1)).size(13)
             };
 
             row![status, space::horizontal(), position]
@@ -1027,7 +1055,16 @@ impl Editor {
                 .spacing(10)
                 .height(Length::Fill),
         )
-        .width(Length::FillPortion(3));
+        .width(Length::FillPortion(3))
+        .padding(Padding::new(0.).top(10).right(10).bottom(10).left(10))
+        .style(|_theme| container::Style {
+            border: Border {
+                color: Color::from_rgb8(0x50, 0x54, 0x5d),
+                width: 1.0,
+                radius: 10.0.into(),
+            },
+            ..Default::default()
+        });
 
         // // This is the previously final line before using the extern dialog overlay widget
         // container(row![left, right].spacing(35)).padding(10).into()
