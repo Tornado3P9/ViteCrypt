@@ -823,7 +823,7 @@ impl Editor {
 
         // This is the button row just above the text editor field
         // in the right container
-        let editor_controls = row![
+        let editor_controls = container(row![
             action(new_icon(), "New file".to_string(), Some(Message::New)),
             action(open_icon(), "Open file".to_string(), Some(Message::Open)),
             action(
@@ -864,7 +864,21 @@ impl Editor {
         ]
         .spacing(10)
         .width(Length::FillPortion(3))
-        .align_y(iced::Alignment::Center);
+        .align_y(iced::Alignment::Center)
+        ).padding(iced::Padding {
+            top: 8.0,
+            right: 15.0,
+            bottom: 8.0,
+            left: 5.0,
+        })
+        .style(|_theme| container::Style {
+            border: Border {
+                color: Color::from_rgb8(0x50, 0x54, 0x5d),
+                width: 1.0,
+                radius: 10.0.into(),
+            },
+            ..Default::default()
+        });
 
         // let lupe_row = container(
         //     row![lupe_icon(), text(format!("{}", &self.found)).size(18)]
