@@ -251,28 +251,49 @@ pub fn action(
     let label_ref: &str = Box::leak(label.into_boxed_str()); // converts owned String to 'static &str
 
     tooltip(
+        // button(container(content).width(30).center_x(30))
+        //     .on_press_maybe(on_press)
+        //     .padding([5, 10])
+        //     // .style(if is_disabled {
+        //     //     button::secondary
+        //     // } else {
+        //     //     button::primary
+        //     // }),
+        //     .style(move |theme, status| {
+        //         // let mut style = if is_disabled {
+        //         //     button::secondary(theme, status)
+        //         // } else {
+        //         //     button::primary(theme, status)
+        //         // };
+        //         let mut style = button::text(theme, status);
+        //         style.border.radius = 8.0.into();
+        //         style
+        //     }),
+        //     // text(label_ref).size(24),
+        //     label_ref,
+        //     tooltip::Position::Bottom,
+        //     // tooltip::Position::FollowCursor,
         button(container(content).width(30).center_x(30))
             .on_press_maybe(on_press)
-            .padding([5, 10])
-            // .style(if is_disabled {
-            //     button::secondary
-            // } else {
-            //     button::primary
-            // }),
+            .padding([5, 9])
             .style(move |theme, status| {
-                // let mut style = if is_disabled {
-                //     button::secondary(theme, status)
-                // } else {
-                //     button::primary(theme, status)
-                // };
                 let mut style = button::text(theme, status);
                 style.border.radius = 8.0.into();
+
+                style.background = match status {
+                    button::Status::Hovered => Some(iced::Background::Color(
+                        iced::Color::from_rgba(0.5, 0.5, 0.5, 0.18),
+                    )),
+                    button::Status::Pressed => Some(iced::Background::Color(
+                        iced::Color::from_rgba(0.5, 0.5, 0.5, 0.28),
+                    )),
+                    _ => None,
+                };
+
                 style
             }),
-            // text(label_ref).size(24),
             label_ref,
             tooltip::Position::Bottom,
-            // tooltip::Position::FollowCursor,
     )
     .delay(Duration::from_millis(500)) // default is Duration::ZERO
     .style(container::rounded_box)

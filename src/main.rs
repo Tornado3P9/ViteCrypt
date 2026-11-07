@@ -869,7 +869,7 @@ impl Editor {
             top: 8.0,
             right: 15.0,
             bottom: 8.0,
-            left: 5.0,
+            left: 8.0,//left: 5.0,
         })
         .style(|_theme| container::Style {
             border: Border {
