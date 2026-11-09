@@ -895,6 +895,18 @@ impl Editor {
         //     border: iced::border::rounded(16),
         //     ..container::Style::default()
         // });
+        // // .style(|theme: &Theme| container::Style {
+        // //     background: Some(
+        // //         match theme {
+        // //             Theme::Dark => iced::Color::from_rgb8(0x32, 0x35, 0x39),
+        // //             _ => iced::Color::from_rgb(0.85, 0.92, 1.0),
+        // //         }
+        // //         .into(),
+        // //     ),
+        // //     // text_color: Some(iced::Color::from_rgb(1.0, 1.0, 1.0).into()),
+        // //     border: iced::border::rounded(16),
+        // //     ..container::Style::default()
+        // // });
 
         // "Lupe" is german for "Magnifying glass" because that's what the icon image looks like.
         // "lupe_row" is part of "find_and_replace_row"
@@ -904,22 +916,9 @@ impl Editor {
                 .spacing(8)
                 .align_y(iced::Alignment::Center)
         } else {
-            row![lupe_icon(), text(format!("{}", self.found)).size(18)]
+            row![text(format!("{}", self.found)).size(16)]
                 .spacing(8)
                 .align_y(iced::Alignment::Center)
-        })
-        .padding([5, 10])
-        .style(|theme: &Theme| container::Style {
-            background: Some(
-                match theme {
-                    Theme::Dark => iced::Color::from_rgb8(0x32, 0x35, 0x39),
-                    _ => iced::Color::from_rgb(0.85, 0.92, 1.0),
-                }
-                .into(),
-            ),
-            // text_color: Some(iced::Color::from_rgb(1.0, 1.0, 1.0).into()),
-            border: iced::border::rounded(16),
-            ..container::Style::default()
         });
 
         // The pick_list widget lets the user choose a function that will be applied to the text editor content.
@@ -942,16 +941,13 @@ impl Editor {
                 TextInput::new("replace with...", &self.replace_with)
                     .width(Length::Fill)
                     .on_input(Message::ReplaceChanged),
-                space::horizontal().width(5),
                 button("Select")
                     .on_press(Message::FindSelect)
-                    .style(button::subtle)
-                    .padding([5, 10]),
+                    .style(button::subtle),
                 function_picker,
             ]
-            .padding(Padding::new(0.).top(0).right(0).bottom(5).left(0))
-            // .padding([5, 0])
-            .spacing(5)
+            .padding(Padding::new(0.).top(0).right(0).bottom(10).left(5))
+            .spacing(6)
             .align_y(iced::Alignment::Center)
             .into()
         } else {
