@@ -921,6 +921,64 @@ impl Editor {
                 .align_y(iced::Alignment::Center)
         });
 
+        // The button selects the first occurace of a substring in the text editor content.
+        // It is part of "find_and_replace_row".
+        let find_select_button = button("Select")
+            .on_press(Message::FindSelect)
+            .style(|theme, status| {
+                let mut style = button::subtle(theme, status);
+
+                if matches!(theme, iced::Theme::Dark) {
+                    // style.text_color = iced::Color::from_rgb8(0x86, 0x88, 0x8e);
+
+                    match status {
+                        button::Status::Active => {
+                            style.background =
+                                Some(iced::Color::from_rgb8(0x43, 0x47, 0x4e).into());
+                            style.text_color =
+                                iced::Color::from_rgb8(0x86, 0x88, 0x8e);
+                        }
+                        button::Status::Hovered => {
+                            style.background =
+                                Some(iced::Color::from_rgb8(0x6b, 0x75, 0xff).into());
+                            style.text_color =
+                                iced::Color::from_rgb8(0x15, 0x18, 0x3f);
+                        }
+                        button::Status::Pressed => {
+                            style.background =
+                                Some(iced::Color::from_rgb8(0x52, 0x5b, 0xd6).into());
+                            style.text_color =
+                                iced::Color::from_rgb8(0xf1, 0xf2, 0xff);
+                        }
+                        _ => {}
+                    }
+                } else if matches!(theme, iced::Theme::Light) {
+                    match status {
+                        button::Status::Active => {
+                            style.background =
+                                Some(iced::Color::from_rgb8(0xee, 0xf0, 0xf6).into());
+                            style.text_color =
+                                iced::Color::from_rgb8(0x34, 0x38, 0x4a);
+                        }
+                        button::Status::Hovered => {
+                            style.background =
+                                Some(iced::Color::from_rgb8(0x6b, 0x75, 0xff).into());
+                            style.text_color =
+                                iced::Color::from_rgb8(0x15, 0x18, 0x3f);
+                        }
+                        button::Status::Pressed => {
+                            style.background =
+                                Some(iced::Color::from_rgb8(0x52, 0x5b, 0xd6).into());
+                            style.text_color =
+                                iced::Color::from_rgb8(0xf1, 0xf2, 0xff);
+                        }
+                        _ => {}
+                    }
+                }
+
+                style
+            });
+
         // The pick_list widget lets the user choose a function that will be applied to the text editor content.
         // "function_picker" is part of "find_and_replace_row".
         let function_picker = pick_list(
@@ -941,9 +999,7 @@ impl Editor {
                 TextInput::new("replace with...", &self.replace_with)
                     .width(Length::Fill)
                     .on_input(Message::ReplaceChanged),
-                button("Select")
-                    .on_press(Message::FindSelect)
-                    .style(button::subtle),
+                find_select_button,
                 function_picker,
             ]
             .padding(Padding::new(0.).top(0).right(0).bottom(10).left(5))
