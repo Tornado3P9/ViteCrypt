@@ -1,5 +1,11 @@
 # ViteCrypt
 
+A local desktop application for encrypting text, saving it as a PNG QR code, and decrypting text from QR codes.
+This project was built to test the `iced-rs` framework on Linux and is intended for experimentation rather than professional use.
+While it’s available for anyone to use, it isn’t recommended for handling sensitive data or production use.
+
+Powered by 🦀 Rust and 🧊 iced v0.14.0
+
 ```bash
 # build release binary
 cargo build --release
