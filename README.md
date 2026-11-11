@@ -4,7 +4,7 @@
 # build release binary
 cargo build --release
 
-# build release cross-compiled Windows executable
+# build release cross-compiled Windows executable on linux
 sudo apt install mingw-w64 binutils-mingw-w64-x86-64 gcc-mingw-w64-x86-64 # sudo dnf install mingw64-binutils mingw64-gcc
 command -v x86_64-w64-mingw32-dlltool
 rustup target list
