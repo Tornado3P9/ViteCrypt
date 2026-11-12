@@ -16,6 +16,7 @@ use iced::widget::{
     tooltip,
 };
 use iced::{Border, Color, Element, Length, Padding, Subscription, Task, Theme, exit, keyboard};
+use iced::theme::Base;
 use smol_str::SmolStr;
 
 use functions::{
@@ -871,13 +872,28 @@ impl Editor {
             bottom: 8.0,
             left: 8.0,//left: 5.0,
         })
-        .style(|_theme| container::Style {
-            border: Border {
-                color: Color::from_rgb8(0x50, 0x54, 0x5d),
-                width: 1.0,
-                radius: 10.0.into(),
-            },
-            ..Default::default()
+        // .style(|_theme| container::Style {
+        //     border: Border {
+        //         color: Color::from_rgb8(0x50, 0x54, 0x5d),
+        //         width: 1.0,
+        //         radius: 10.0.into(),
+        //     },
+        //     ..Default::default()
+        // });
+        .style(|theme| {
+            let border_color = match theme.mode() {
+                iced::theme::Mode::Light => Color::from_rgb8(0xcd, 0xcd, 0xcd),
+                _ => Color::from_rgb8(0x50, 0x54, 0x5d),
+            };
+
+            container::Style {
+                border: Border {
+                    color: border_color,
+                    width: 1.0,
+                    radius: 10.0.into(),
+                },
+                ..Default::default()
+            }
         });
 
         // let lupe_row = container(
@@ -1077,13 +1093,28 @@ impl Editor {
         )
         .width(Length::FillPortion(2))
         .padding(Padding::new(0.).top(20).right(20).bottom(0).left(20))
-        .style(|_theme| container::Style {
-            border: Border {
-                color: Color::from_rgb8(0x50, 0x54, 0x5d),
-                width: 1.0,
-                radius: 10.0.into(),
-            },
-            ..Default::default()
+        // .style(|_theme| container::Style {
+        //     border: Border {
+        //         color: Color::from_rgb8(0x50, 0x54, 0x5d),
+        //         width: 1.0,
+        //         radius: 10.0.into(),
+        //     },
+        //     ..Default::default()
+        // });
+        .style(|theme| {
+            let border_color = match theme.mode() {
+                iced::theme::Mode::Light => Color::from_rgb8(0xcd, 0xcd, 0xcd),
+                _ => Color::from_rgb8(0x50, 0x54, 0x5d),
+            };
+
+            container::Style {
+                border: Border {
+                    color: border_color,
+                    width: 1.0,
+                    radius: 10.0.into(),
+                },
+                ..Default::default()
+            }
         });
 
         // // Example for border style
@@ -1123,13 +1154,28 @@ impl Editor {
         )
         .width(Length::FillPortion(3))
         .padding(Padding::new(0.).top(10).right(10).bottom(10).left(10))
-        .style(|_theme| container::Style {
-            border: Border {
-                color: Color::from_rgb8(0x50, 0x54, 0x5d),
-                width: 1.0,
-                radius: 10.0.into(),
-            },
-            ..Default::default()
+        // .style(|_theme| container::Style {
+        //     border: Border {
+        //         color: Color::from_rgb8(0x50, 0x54, 0x5d),
+        //         width: 1.0,
+        //         radius: 10.0.into(),
+        //     },
+        //     ..Default::default()
+        // });
+        .style(|theme| {
+            let border_color = match theme.mode() {
+                iced::theme::Mode::Light => Color::from_rgb8(0xcd, 0xcd, 0xcd),
+                _ => Color::from_rgb8(0x50, 0x54, 0x5d),
+            };
+
+            container::Style {
+                border: Border {
+                    color: border_color,
+                    width: 1.0,
+                    radius: 10.0.into(),
+                },
+                ..Default::default()
+            }
         });
 
         // // This is the previously final line before using the extern dialog overlay widget
