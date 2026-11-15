@@ -6,6 +6,8 @@ A local desktop application for encrypting text, saving it as a PNG QR code, and
 This project was built to test the iced-rs framework on Linux and is intended for experimentation rather than professional use.
 While it’s available for anyone to use, it isn’t recommended for handling sensitive data or production use.
 
+![screenshot0.png](Archive/screenshot0.png)
+
 The clipboard operations are implemented using native operating-system APIs  
 or commonly available command-line utilities:
 
