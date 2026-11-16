@@ -38,5 +38,4 @@ rustup target add aarch64-apple-darwin
 cargo build --release --target aarch64-apple-darwin
 ```
 
-Licensing: The source code is licensed under MIT. The word list Archive/WordList/de-7776-v1.txt is multi-licensed under Unlicense, CC0 and BSD-3.
-You can choose between one of them if you use this work. You can use any word list, provided it contains at least 2,000 words, with one word per line. The pre-build check `build.rs` enforces this requirement.
+Licensing: The original source code in this repository, including prior commits, and the binaries built from it are licensed under the MIT License, except for third-party components, which remain subject to their respective licenses. The iced and iced_dialog crates are both MIT. The word list src/wordlist.txt (Archive/WordList/de-7776-v1.txt) is multi-licensed under Unlicense, CC0 and BSD-3. You can use any word list, provided it contains at least 2,000 words, with one word per line. The pre-build check `build.rs` enforces this requirement.
