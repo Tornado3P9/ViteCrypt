@@ -37,3 +37,6 @@ rustup target list
 rustup target add aarch64-apple-darwin
 cargo build --release --target aarch64-apple-darwin
 ```
+
+Licensing: The source code is licensed under MIT. The word list Archive/WordList/de-7776-v1.txt is multi-licensed under Unlicense, CC0 and BSD-3.
+You can choose between one of them if you use this work. You can use any word list, provided it contains at least 2,000 words, with one word per line. The pre-build check `build.rs` enforces this requirement.
