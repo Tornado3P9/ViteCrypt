@@ -2,8 +2,7 @@ A new release of **[ViteCrypt](https://github.com/Tornado3P9/ViteCrypt)**.
 
 ## Changes
 
-- Added the release.yml to include zipping and builds for mac and windows.
-- Adapted the layout and color theme to the original idea.
+- Linux releases are now explicitly built on Ubuntu 24.04 to improve compatibility with older glibc versions.
 
 ## Installation
 
