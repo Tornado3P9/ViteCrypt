@@ -669,7 +669,7 @@ impl Editor {
         // contains the main controls elements )
         // in the left container
         let controls_title_bar = {
-            let controls_title = text("v1.1").size(15); //text("Controls").size(15);
+            let controls_title = text("v1.2").size(15); //text("Controls").size(15);
             row![controls_title, space::horizontal()]
         }; // Space::new(Length::Fill, Length::Units(0))
 
@@ -928,13 +928,9 @@ impl Editor {
         // "lupe_row" is part of "find_and_replace_row"
         // in the right container
         let lupe_row = container(if self.found == 0usize {
-            row![lupe_icon()]
-                .spacing(8)
-                .align_y(iced::Alignment::Center)
+            row![lupe_icon()].align_y(iced::Alignment::Center)
         } else {
-            row![text(format!("{}", self.found)).size(16)]
-                .spacing(8)
-                .align_y(iced::Alignment::Center)
+            row![text(format!("{}", self.found)).size(16)].align_y(iced::Alignment::Center)
         });
 
         // The button selects the first occurace of a substring in the text editor content.
@@ -1008,7 +1004,7 @@ impl Editor {
         let find_and_replace_row: Element<_> = if self.find_and_replace_visibility {
             row![
                 lupe_row,
-                space::horizontal().width(5),
+                space::horizontal().width(2),
                 TextInput::new("find...", &self.search)
                     .width(Length::Fill)
                     .on_input(Message::SearchChanged),
